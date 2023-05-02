@@ -2,6 +2,9 @@ const app = require("express")();
 const bodyParser = require("body-parser");
 const { graphqlHTTP } = require("express-graphql");
 const { buildSchema } = require("graphql");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+dotenv.config();
 
 app.use(bodyParser.json());
 
@@ -56,6 +59,13 @@ app.use(
   })
 );
 
-app.listen(3000, () => {
-  console.log("You are listening port 3000");
+mongoose
+  .connect(process.env.DB_URL)
+  .then(() => console.log("Connected to DB"))
+  .catch((err) => {
+    console.log(err);
+  });
+
+app.listen(process.env.PORT, () => {
+  console.log(`listening on port ${process.env.PORT}`);
 });
