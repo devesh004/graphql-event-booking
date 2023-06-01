@@ -5,56 +5,41 @@ const { buildSchema } = require("graphql");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
+const Event = require("./models/event");
+const User = require("./models/user");
+const crypto = require("crypto-js");
+const schema = require("./graphql/schema/index");
+const resolvers = require("./graphql/resolver/index");
 
 app.use(bodyParser.json());
 
-const events = [];
+const findEvents = async (eventIds) => {
+  const events = await Event.find({ _id: { $in: eventIds } });
+  return events;
+};
+
+const findUser = async (userId) => {
+  const user = await User.findById(userId);
+  // const promiseEvents = user.createdEvent.map(async (event) => {
+  //   const eventId = event.toString();
+  //   const eventDet = await findEvent(eventId);
+  //   return { ...eventDet._doc };
+  // });
+  // const allEvents = await Promise.all(promiseEvents);
+  // // console.log("EVENTS", allEvents);
+  // const userDet = { ...user._doc, createdEvent: allEvents };
+  // // console.log("USER_DET", userDet);
+  // return userDet;
+
+  const userEvents = await findEvents(user.createdEvent);
+  return { ...user._doc, createdEvents: userEvents };
+};
+
 app.use(
   "/graphql",
   graphqlHTTP({
-    schema: buildSchema(`
-        type Event{
-            _id: ID!
-            desc: String!
-            title: String!
-            price: Float!
-            date: String!
-        }
-
-        input EventInput{
-            desc: String!
-            title: String!
-            price: Float!
-            date: String!
-        }
-
-        type RootQuery{
-            events: [Event!]!
-        }
-        type RootMutation{
-            createEvent(eventInput: EventInput): Event
-        }
-        schema{
-            query: RootQuery
-            mutation: RootMutation
-        }
-    `),
-    rootValue: {
-      events: () => {
-        return events;
-      },
-      createEvent: (arg) => {
-        const newEvent = {
-          _id: Math.random().toString(),
-          desc: arg.eventInput.desc,
-          title: arg.eventInput.title,
-          price: +arg.eventInput.price,
-          date: arg.eventInput.date,
-        };
-        events.push(newEvent);
-        return newEvent;
-      },
-    },
+    schema: schema,
+    rootValue: resolvers,
     graphiql: true,
   })
 );
