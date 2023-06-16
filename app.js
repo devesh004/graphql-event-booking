@@ -8,8 +8,13 @@ dotenv.config();
 
 const schema = require("./graphql/schema/index");
 const resolvers = require("./graphql/resolver/index");
+const verify = require("./middleware/verify");
 
 app.use(bodyParser.json());
+
+//we have this verify or auth middleware everywhere ......as graphql always have one end point thats why
+//we did not throw any error we just added properties in req accordingly
+app.use(verify);
 
 app.use(
   "/graphql",

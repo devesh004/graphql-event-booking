@@ -24,14 +24,17 @@ module.exports = {
       throw err;
     }
   },
-  createEvent: async (arg) => {
+  createEvent: async (arg, req) => {
+    if (!req.isAuth) {
+      throw new Error("you are not allowed");
+    }
     try {
       const newEvent = new Event({
         desc: arg.eventInput.desc,
         title: arg.eventInput.title,
         price: +arg.eventInput.price,
         date: new Date(arg.eventInput.date),
-        creater: "645cb87a69e3cd84f92b5763",
+        creater: req.userId,
       });
       const event = await newEvent.save();
       const user = await User.findById("645cb87a69e3cd84f92b5763");

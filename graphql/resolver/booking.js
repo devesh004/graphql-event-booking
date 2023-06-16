@@ -4,7 +4,10 @@ const { dateToString } = require("../../helpers/dateToString");
 const { findOneEvent, findUser } = require("./common");
 
 module.exports = {
-  bookings: async () => {
+  bookings: async (req) => {
+    if (!req.isAuth) {
+      throw new Error("you are not allowed");
+    }
     try {
       const bookings = await Booking.find();
       return bookings.map(async (booking) => {
@@ -25,7 +28,10 @@ module.exports = {
       throw err;
     }
   },
-  bookEvent: async (args) => {
+  bookEvent: async (args, req) => {
+    if (!req.isAuth) {
+      throw new Error("you are not allowed");
+    }
     try {
       const user = "645cb87a69e3cd84f92b5763";
       const event = await Event.findById(args.eventId);
@@ -46,7 +52,10 @@ module.exports = {
       throw err;
     }
   },
-  cancelBooking: async (args) => {
+  cancelBooking: async (args, req) => {
+    if (!req.isAuth) {
+      throw new Error("you are not allowed");
+    }
     try {
       const booking = await Booking.findById(args.bookingId).populate("event");
       const userId = booking.event.creater.toString();
